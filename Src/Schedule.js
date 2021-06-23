@@ -13,7 +13,6 @@ import Feather from 'react-native-vector-icons/Feather';
 import { Body, Card, Header, Left, Right, Title } from 'native-base';
 import Styles from './Styles';
 import CardView from './CardView';
-import moment from 'moment';
 
 
 class Schedule extends React.Component {
@@ -22,11 +21,27 @@ class Schedule extends React.Component {
         this.state = {
             apiResponse:[],
             activeIndex:0,
-            activeId:1,
+            activeId:0,
+            title:'',
+            count:0,
+            apiOnce:false,
+            arrayList:[],
+        }
+        console.log('proops is', props)
+    }
+    componentWillReceiveProps(nextProps){
+        console.log('didmount hit',nextProps.route)
+        if(nextProps.route.params !== undefined && this.state.apiOnce === true){
+            this.setState({ title:nextProps.route.params.title, count:this.state.count+1, 
+                apiOnce:false})
+                let title=nextProps.route.params.title;
+                let id=this.state.activeId
+            this.state.arrayList.push({title, id})
         }
     }
-      
     componentDidMount(){
+       
+        // this.setState({ title:this.props.route.params.title})
         let type='calendar';
         let API_URL = `http://app.curateus.com/interview/recommend_schedule`;
         axios
@@ -36,21 +51,21 @@ class Schedule extends React.Component {
                   }
             })
             .then((response) => {
-            // console.log('api success', response.data);
+            console.log('api success', response.data);
             this.setState({apiResponse:response.data,date:response.data[0].day,
                 month:response.data[0].month_name, year:response.data[0].year, time:response.data[0].time})
             })
             .catch((error) => {
             // console.log('api error', error);
             });
+
     }
 
     // main render function
     render(){
-        
+        console.log('api error', this.state.arrayList)
         return(
             <View style={{flex:1}}>
-                <StatusBar backgroundColor='#08b4cc'/>
                <Header style={{backgroundColor:'#08b4cc'}}>
                    <Left>
                         <Feather name='menu' size={22} color="#fff"/>
@@ -76,9 +91,9 @@ class Schedule extends React.Component {
                                     <Text style={{textAlign:'center',paddingBottom:5, color:'#08b4cc'}}>{item.month_name}</Text>
                                         <View style={{borderColor:'#08b4cc',width:50, height:50, borderRadius:25, borderWidth:0.4, justifyContent:'center'}}>
                                             <Text style={{alignSelf:'center', textAlign:'center', fontSize:25, color:'#08b4cc'}}
-                                            onPress={()=>{this.setState({date:item.day,month:item.month_name, year:item.year, activeIndex:index, activeId:item.id, time:item.time})}}>{item.day}</Text>
+                                            onPress={()=>{this.setState({date:item.day,month:item.month_name, year:item.year, activeIndex:index, activeId:item.id, time:item.time, count:0})}}>{item.day}</Text>
                                         </View>  
-                                        <Text style={{alignSelf:'center', textAlign:'center', fontSize:12, color:'#08b4cc', paddingBottom:20}}>#{item.time.length}</Text>                                  
+                                        <Text style={{alignSelf:'center', textAlign:'center', fontSize:12, color:'#08b4cc', paddingBottom:20}}>#0</Text>                                  
                                     </View>
                             )}else if(index===this.state.activeIndex){
                                 return (                               
@@ -88,7 +103,7 @@ class Schedule extends React.Component {
                                             <Text style={{alignSelf:'center', textAlign:'center', fontSize:25, color:'#fff'}}
                                             onPress={()=>{this.setState({date:item.day,month:item.month_name, year:item.year,activeIndex:index,activeId:item.id})}}>{item.day}</Text>
                                         </View>  
-                                        <Text style={{alignSelf:'center', textAlign:'center', fontSize:12, color:'#08b4cc', paddingBottom:20}}>#{item.time.length}</Text>                                  
+                                        <Text style={{alignSelf:'center', textAlign:'center', fontSize:12, color:'#08b4cc', paddingBottom:20}}>#{this.state.count}</Text>                                  
                                     </View>
                             )
                             }}}
@@ -104,16 +119,18 @@ class Schedule extends React.Component {
                     keyExtractor={(item, index) => index}
                     renderItem={({item, index}) => {
                       if (index!==this.state.activeIndex) {
-                        //   console.log('print the only time', item.time)
                         return (
-                            <View style={{flexDirection:'row', justifyContent:'space-between', padding:15}}>                            
+                            <View style={{flexDirection:'row', justifyContent: this.state.activeId>0 && this.state.activeId===item.id?null:'space-between', padding:15}}>                            
                                     <Text>{item.time}</Text>
-                                    <Text>{item.content}</Text>
-                                    {item.content === null?
-                                    <TouchableOpacity onPress={()=>this.props.navigation.navigate('Preview')}
+                                    
+                                    {this.state.activeId>0 && this.state.activeId===item.id?
+                                    <Text style={{textAlign:'center', paddingLeft:20, paddingRight:20}} numberOfLines={1} ellipsizeMode='tail'>{this.state.title}</Text>:null}
+                                    {this.state.title !== null && this.state.activeId !== item.id?
+                                    <TouchableOpacity onPress={()=>[this.props.navigation.navigate('Preview'), this.setState({activeId:item.id,apiOnce:true})]}
                                     style={{borderWidth:1, borderColor:'#08b4cc', borderRadius:50, length:100, width:80, padding:5}}> 
                                         <Text style={{textAlign:'center'}}>Add</Text>
-                                    </TouchableOpacity> :null}                         
+                                    </TouchableOpacity> :null}     
+
                             </View>
                         )}}}
                     />

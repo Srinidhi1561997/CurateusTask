@@ -5,22 +5,18 @@ import {
   Text,
   View,
   Image,
-  Linking
+  Linking,
+  TouchableOpacity
 } from 'react-native';
-import StarRating from 'react-native-star-rating';
-import {Header, Left, Right} from 'native-base';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import StickyParallaxHeader from 'react-native-sticky-parallax-header';
-import Animated from 'react-native-reanimated';
 import Styles from './Styles';
-import CardView from './CardView';
 
 class Preview extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             apiResponse:[],
-            scroll: new Animated.Value(0),
         }
     }
       
@@ -29,7 +25,7 @@ class Preview extends React.Component {
         axios
             .get(API_URL)
             .then((response) => {
-            // console.log('api success', response.data);
+            console.log('api success', response.data);
             this.setState({apiResponse:response.data, 
                 thumbNail: response.data.thumbnail, 
                 title:response.data.title,
@@ -48,10 +44,11 @@ class Preview extends React.Component {
               </View>
           )
       }
+      
 
     // main render function
     render(){
-        // console.log('thumbnail image is', this.state.apiResponse.tags,this.state.apiResponse.media_time,)
+        console.log('thumbnail image is', this.state.title)
         return(
             <View style={[Styles.Container,{backgroundColor:'#fff'}]}>
                 <StickyParallaxHeader
@@ -122,6 +119,12 @@ class Preview extends React.Component {
                         )
                     }}
                 />
+                <View style={{padding:10, justifyContent:'center', alignItems:'center'}}>
+                <TouchableOpacity onPress={()=>{this.props.navigation.navigate('Schedule', {title:this.state.title}), console.log('atlease test here', this.state.title)}}
+                style={{alignItems:'center',alignContent:'center',justifyContent:'center',width:"50%", height:50, borderRadius:25, borderWidth:0.4, borderColor:'#08b4cc', backgroundColor:'#08b4cc'}}>
+                    <Text style={{textAlign:'center',color:'#fff'}}>Schedule</Text>
+                </TouchableOpacity>
+                </View>
             </View>
         )
     }

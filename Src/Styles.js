@@ -49,5 +49,8 @@ const Styles = StyleSheet.create({
         fontSize:16,
         textAlign:'center'
       },
+      statusBar: {
+        height: 28,
+      },
 })
 export default Styles;
